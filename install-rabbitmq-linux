@@ -1,0 +1,74 @@
+#### init machine
+
+sudo -i
+yum update
+yum install -y mercurial git
+
+#### fix server timezone
+
+cp -f /usr/share/zoneinfo/US/Eastern /etc/localtime
+
+#### add Red Hat repo
+
+rpm -Uvh http://download.fedoraproject.org/pub/epel/6/i386/epel-release-6-8.noarch.rpm
+
+#### install erlang
+
+yum install -y erlang
+
+#### download and install rabbitmq
+
+wget http://www.rabbitmq.com/releases/rabbitmq-server/v3.4.2/rabbitmq-server-3.4.2-1.noarch.rpm
+rpm -ivh rabbitmq-server-3.4.2-1.noarch.
+
+#### start rabbit, check plugins
+
+/etc/init.d/rabbitmq-server restart
+rabbitmq-plugins list
+
+#### config rabbit server as a service
+
+chkconfig rabbitmq-server on
+
+#### download management plugin 
+
+cd /var/lib/rabbitmq && hg clone http://hg.rabbitmq.com/rabbitmq-public-umbrella
+cd /var/lib/rabbitmq/rabbitmq-public-umbrella && make co
+cd /var/lib/rabbitmq/rabbitmq-public-umbrella/rabbitmq-management && make
+
+#### enable mgmt plugin and restart service
+
+rabbitmq-plugins enable --offline rabbitmq_management
+/etc/init.d/rabbitmq-server restart
+
+#### check status and plugins
+
+rabbitmqctl status
+rabbitmq-plugins list
+
+#### add test user
+
+rabbitmqctl add_user test test
+rabbitmqctl set_user_tags test administrator
+rabbitmqctl set_permissions -p / test ".*" ".*" ".*"
+
+#### config iptables
+
+iptables -A INPUT -s 0.0.0.0/0 -p tcp --destination-port 15672 -m state --state NEW,ESTABLISHED -j ACCEPT
+iptables -A OUTPUT -d 0.0.0.0/0 -p tcp --source-port 15672 -m state --state ESTABLISHED -j ACCEPT
+
+service iptables save
+
+#### or, open firewall entirely (ok for dev only)
+
+iptables=/sbin/iptables
+$iptables -F
+$iptables -X
+$iptables -t nat -F
+$iptables -t nat -X
+$iptables -t mangle -F
+$iptables -t mangle -X
+$iptables -P INPUT ACCEPT
+$iptables -P FORWARD ACCEPT
+$iptables -P OUTPUT ACCEPT
+service iptables save
