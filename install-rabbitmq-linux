@@ -2,10 +2,7 @@
 
 sudo -i
 apt-get update
-apt-get install yum
-
-yum update
-yum install -y mercurial git
+apt-get install rabbitmq-server
 
 #### fix server timezone
 
