@@ -1,0 +1,33 @@
+
+wget http://node-arm.herokuapp.com/node_archive_armhf.deb && \
+sudo dpkg -i node_archive_armhf.deb
+sudo npm install -g --unsafe-perm node-red
+
+wget http://www.airspayce.com/mikem/bcm2835/bcm2835-1.44.tar.gz && \
+tar zxvf bcm2835-1.44.tar.gz && \
+cd bcm2835-1.44 && \
+./configure && \
+make && \
+sudo make check && \
+sudo make install
+
+
+sudo su -
+cd /usr/local/lib/node_modules/node-red && \
+sudo npm install node-dht-sensor && \
+sudo npm install node-red-contrib-dht-sensor && \
+sudo npm install node-red-contrib-meshblu
+
+
+sudo wget https://raw.githubusercontent.com/node-red/raspbian-deb-package/master/resources/nodered.service -O /lib/systemd/system/nodered.service && \
+sudo wget https://raw.githubusercontent.com/node-red/raspbian-deb-package/master/resources/node-red-start -O /usr/bin/node-red-start && \
+sudo wget https://raw.githubusercontent.com/node-red/raspbian-deb-package/master/resources/node-red-stop -O /usr/bin/node-red-stop && \
+sudo chmod +x /usr/bin/node-red-st* && \
+sudo systemctl daemon-reload &&\
+sudo systemctl enable nodered.service
+
+# change user to root
+
+sudo nano /lib/systemd/system/nodered.service
+
+#reboot to autostart
